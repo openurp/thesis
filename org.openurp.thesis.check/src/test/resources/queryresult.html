@@ -1,0 +1,1615 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><link href="App_Themes/m1/calendar.css" type="text/css" rel="stylesheet" /><link href="App_Themes/m1/form.css" type="text/css" rel="stylesheet" /><link href="App_Themes/m1/menu.css" type="text/css" rel="stylesheet" /><link href="App_Themes/m1/ot.css" type="text/css" rel="stylesheet" /><link href="App_Themes/m1/pmlc.css" type="text/css" rel="stylesheet" /><link href="App_Themes/m1/TabbedPanels.css" type="text/css" rel="stylesheet" /><title>
+	上传论文
+</title>
+
+    <script type="text/javascript" src="SwfUpload/swfupload.js"></script>
+
+    <script type="text/javascript" src="SwfUpload/handlers.js"></script>
+
+    <script type="text/javascript" src="Script/Common.js"></script>
+
+    <script type="text/javascript" src="Script/TabbedPanels.js"></script>
+
+    <script src="Script/jQuery.js" type="text/javascript"></script>
+
+    <script type="text/javascript" src="Script/cal.js"></script>
+
+    <script type="text/javascript">
+        function ChangeEN(ck) {
+            var obj = Fid("cbf2");
+
+            if (obj != null) {
+                if (ck.checked) {
+                    var temp = obj.getElementsByTagName("input");
+
+                    var temp_str = "";
+
+                    for (var i = 0; i < temp.length && i < 1; i++) {
+                        temp[i].checked = false;
+                        //temp[i].style.display = "none";
+                        temp[i].disabled = true;
+
+                        var time_obj = Fid("tr_comparetime");
+
+                        if (time_obj != null) {
+                            time_obj.style.display = "none";
+                        }
+                    }
+
+                    //alert(temp_str);
+                }
+                else {
+                    var temp = obj.getElementsByTagName("input");
+
+                    for (var i = 0; i < temp.length && i < 1; i++) {
+                        temp[i].disabled = false;
+                        //temp[i].style.display = "";
+
+                        var time_obj = Fid("tr_comparetime");
+
+                        if (time_obj != null) {
+                            time_obj.style.display = "";
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <script type="text/JavaScript">
+        function nodeclick() {
+            //alert('Begin!');
+            var selected = getCookie('SR_FileNameS');
+            if (!selected || selected.length <= 5) {
+                return;
+            }
+            selected = selected.substring(5, selected.length).split(',');
+
+
+            for (var p = 0; p < selected.length; p++) {
+                var code = selected[p].split('!')[0];
+                //var code=selected[p];
+
+                var obj = document.getElementsByName('SR_FileNameS');
+                for (var i = 0; i < obj.length; i++) {
+
+                    if (obj[i].value.split('!')[0] == code) {
+                        obj[i].checked = true;
+                    }
+                }
+            }
+
+        }
+
+        function checkMark(c) {
+            if (c.checked == true) {
+                if (numMarked() == 50) {
+                    alert("不能超过50个,若要重新选择,请按清除按钮,再进行选取操作");
+                    c.checked = false;
+                }
+                else {
+                    addToCookie(c.value);
+                }
+            }
+            else {
+                removeFromCookie(c.value);
+            }
+
+        }
+        function numMarked() {
+            company = "cnki";
+            cookie = new String(getCookie("SR_FileNameS"));
+            if ((cookie.substring(0, cookie.indexOf(":")) != company)) {
+                return 0;
+            }
+            a = cookie.split(",");
+            return a.length;
+        }
+        function addToCookie(v) {
+            company = "cnki";
+            cookie = new String(getCookie("SR_FileNameS"));
+            if ((cookie.length > 0) && ((cookie.substring(0, cookie.indexOf(':')) == company))) {
+                if (cookie.length - 1 == cookie.indexOf(':')) {
+                    setCookie("SR_FileNameS", cookie + v);
+                }
+                else {
+                    setCookie("SR_FileNameS", cookie + "," + v);
+                }
+            }
+            else {
+                setCookie("SR_FileNameS", company + ":" + v);
+            }
+        }
+        function removeFromCookie(v) {
+            var company = "cnki";
+            var cookie = new String(getCookie("SR_FileNameS"));
+            if (cookie.substring(0, cookie.indexOf(':')) == company) {
+                if (cookie.length < 5) { return; } else { cookie += ','; cookie = cookie.replace(v + ',', ''); if (cookie.length > 5) { cookie = cookie.substring(0, cookie.length - 1); } setCookie('SR_FileNameS', cookie); }
+            } else { cookie = ""; }
+            if (cookie != "") { setCookie("SR_FileNameS", (cookie.indexOf(company + ":") != -1 ? "" : company + ":") + cookie); }
+            else { setCookie("SR_FileNameS", company + ":"); }
+        }
+
+        function getCookie(Name) {
+            var search = Name + "=";
+            if (document.cookie.length > 0) {
+                offset = document.cookie.indexOf(search);
+                if (offset != -1) {
+                    offset += search.length;
+                    end = document.cookie.indexOf(";", offset);
+                    if (end == -1) end = document.cookie.length;
+                    return unescape(document.cookie.substring(offset, end));
+                }
+            }
+        }
+        function setCookie(name, value) {
+            document.cookie = name + "=" + escape(value) + ";" + "path=/";
+        }
+        function clearAllMarks(form) {
+            e = document.forms(0).elements;
+            for (i = 0; i < e.length; i++) {
+                if (e[i].type == "checkbox" && e[i].name == "SR_FileNameS") {
+                    e[i].checked = false;
+                }
+            }
+            setCookie("SR_FileNameS", "cnki:");
+        }
+        function checkAll(form) {
+            e = document.forms(0).elements;
+            for (i = 0; i < e.length; i++) {
+                if (e[i].type == "checkbox" && e[i].name == "SR_FileNameS") {
+                    if (numMarked() == 50) {
+                        alert("不能超过50个,若要重新选择,请按清除按钮,再进行选取操作");
+                        break;
+                    } else {
+                        if (e[i].checked == false) {
+                            addToCookie(e[i].value);
+                            e[i].checked = true;
+                        }
+                    }
+                }
+            }
+
+        }
+        function SelectedFile() {
+            var selected = getCookie('SR_FileNameS');
+
+            if (!selected || selected.length <= 5) {
+                alert('请选择至少1篇要转移的文件。');
+                return false;
+            }
+            else {
+                return confirm('确认转移文件夹？');
+
+            }
+
+        }
+        function SelectedFile5() {
+            var selected = getCookie('SR_FileNameS');
+
+            if (!selected || selected.length <= 5) {
+                alert('请选择至少1篇要删除的文件。');
+                return false;
+            }
+            else {
+                return confirm('确认要删除文件么？');
+
+            }
+
+        }
+        function Selected() {
+            var selected = getCookie('SR_FileNameS');
+
+            if (!selected || selected.length <= 5) {
+                alert('请选择至少1篇文件。');
+                return false;
+            }
+            else {
+                return true;
+
+            }
+
+        }
+
+        function SelectedFile4() {
+            if (confirm('确认要批量删除当前所有的文件么？')) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        function SelectA(obj) {
+            if (obj.checked) {
+                checkAll(document.forms(0));
+            }
+            else {
+                clearAllMarks(document.forms(0));
+            }
+        }
+    </script>
+
+    <script type="text/javascript">
+        function showCKWX() {
+            var obj = Fid("div_ckwx");
+
+            if (obj != null) {
+                obj.style.display = 'block';
+                FsetOffsetWindowPostionByRate(obj, 2, 3);
+                FsetModal();
+            }
+        }
+        function showCKWXXZ() {
+            var obj = Fid("div_ckwxxz");
+
+            if (obj != null) {
+                obj.style.display = 'block';
+                FsetOffsetWindowPostionByRate(obj, 2, 3);
+                FsetModal();
+            }
+        }
+        function showCKWX1() {
+            var obj = Fid("div_ckwx1");
+
+            if (obj != null) {
+                obj.style.display = 'block';
+                FsetOffsetWindowPostionByRate(obj, 2, 3);
+                FsetModal();
+            }
+        }
+        function showCKWX4() {
+            var obj = Fid("div_ckwx4");
+
+            if (obj != null) {
+                obj.style.display = 'block';
+                FsetOffsetWindowPostionByRate(obj, 2, 3);
+                FsetModal();
+            }
+        }
+        function showCKWX2() {
+            var obj = Fid("div_ckwx2");
+
+            if (obj != null) {
+                obj.style.display = 'block';
+                FsetOffsetWindowPostionByRate(obj, 2, 3);
+                FsetModal();
+            }
+        }
+        function CloseCKWX() {
+            var obj = Fid("div_ckwx");
+
+            if (obj != null) {
+                obj.style.display = 'none';
+                FunsetModal();
+            }
+        }
+        function CloseCKWXXZ() {
+            var obj = Fid("div_ckwxxz");
+
+            if (obj != null) {
+                obj.style.display = 'none';
+                FunsetModal();
+            }
+        }
+        function CloseCKWX1() {
+            var obj = Fid("div_ckwx1");
+
+            if (obj != null) {
+                obj.style.display = 'none';
+                FunsetModal();
+            }
+        }
+        function CloseCKWX2() {
+            var obj = Fid("div_ckwx2");
+
+            if (obj != null) {
+                obj.style.display = 'none';
+                FunsetModal();
+            }
+        }
+        function CloseCKWX4() {
+            var obj = Fid("div_ckwx4");
+
+            if (obj != null) {
+                obj.style.display = 'none';
+                FunsetModal();
+            }
+        }
+        function showType(type) {
+            var obj = Fid("div_choiceType");
+
+            if (obj != null) {
+                var hobj = Fid("Hidden_Type");
+
+                if (hobj != null) {
+                    hobj.value = type;
+                }
+
+                obj.style.display = 'block';
+                FsetOffsetWindowPostionByRate(obj, 2, 3);
+                FsetModal();
+
+                var s_a = Fid("r_a").style.display = "none";
+                var s_p = Fid("r_p").style.display = "none";
+
+                if (type == "yes") {
+                    s_a = Fid("r_a").style.display = "";
+                }
+                else {
+                    s_p = Fid("r_p").style.display = "";
+                }
+            }
+        }
+        function showType1(type) {
+            var selected = getCookie('SR_FileNameS');
+
+            if (!selected || selected.length <= 5) {
+                alert('请选择至少1篇文件。');
+            }
+            else {
+                var obj = Fid("div_choiceType");
+
+                if (obj != null) {
+                    var hobj = Fid("Hidden_Type");
+
+                    if (hobj != null) {
+                        hobj.value = type;
+                    }
+
+                    obj.style.display = 'block';
+                    FsetOffsetWindowPostionByRate(obj, 2, 3);
+                    FsetModal();
+
+                    var s_a = Fid("r_a").style.display = "none";
+                    var s_p = Fid("r_p").style.display = "none";
+
+                    if (type == "yes") {
+                        s_a = Fid("r_a").style.display = "";
+                    }
+                    else {
+                        s_p = Fid("r_p").style.display = "";
+                    }
+                }
+
+            }
+
+        }
+        function CloseType() {
+            var obj = Fid("div_choiceType");
+
+            if (obj != null) {
+                obj.style.display = 'none';
+                FunsetModal();
+            }
+        }
+    </script>
+
+    <script type="text/javascript">
+        function ClearM() {
+            $("#nav li ul").hide(0);
+            $("#nav2 li ul").hide(0);
+        }
+    </script>
+
+    <style type="text/css">
+        .btnjj
+        {
+            margin-left: 0px;
+        }
+    </style>
+
+    <script type="text/javascript">
+        var TabbedPanels2;
+
+        function SetP() {
+            TabbedPanels2 = new Spry.Widget.TabbedPanels("TabbedPanels2");
+
+            $('#nav li').click(function(event) { ClearM(); $('ul', this).show(0); event.stopPropagation(); });
+
+            $('#nav2 li').click(function(event) { ClearM(); $('ul', this).show(0); event.stopPropagation(); });
+
+            $(document).click(function(event) { ClearM(); });
+        }
+        function SetRepeaterListStyle() {
+            var overcolor = '#FCF9D8'; //鼠标经过颜色
+            var color1 = '#FFFFFF';  //第一种颜色
+            var color2 = '#f1f8ed';  //第二种颜色
+
+            var tr = $("[name='repeater_item']");
+
+            for (var i = 0; i < tr.length; i++) {
+                tr[i].onmouseover = function() {
+                    this.style.backgroundColor = overcolor;
+                }
+                if (i % 2 == 0) {
+                    tr[i].style.backgroundColor = color2;
+
+                    tr[i].onmouseout = function() {
+                        this.style.backgroundColor = color2;
+                    }
+                }
+                else {
+                    tr[i].onmouseout = function() {
+                        this.style.backgroundColor = color1;
+                    }
+                }
+            }
+        }
+    </script>
+
+</head>
+<body>
+    <form name="form1" method="post" action="SimResult.aspx?ID=6918" onkeypress="javascript:return WebForm_FireDefaultButton(event, 'ImageButton5')" id="form1">
+<div>
+<input type="hidden" name="__EVENTTARGET" id="__EVENTTARGET" value="" />
+<input type="hidden" name="__EVENTARGUMENT" id="__EVENTARGUMENT" value="" />
+<input type="hidden" name="__LASTFOCUS" id="__LASTFOCUS" value="" />
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="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" />
+</div>
+
+<script type="text/javascript">
+//<![CDATA[
+var theForm = document.forms['form1'];
+if (!theForm) {
+    theForm = document.form1;
+}
+function __doPostBack(eventTarget, eventArgument) {
+    if (!theForm.onsubmit || (theForm.onsubmit() != false)) {
+        theForm.__EVENTTARGET.value = eventTarget;
+        theForm.__EVENTARGUMENT.value = eventArgument;
+        theForm.submit();
+    }
+}
+//]]>
+</script>
+
+
+<script src="/school/WebResource.axd?d=ieEKvvYNDwiJUsxAvUr4_fl4Xcg3n2AJsGIrtlwTmibWg8uh6xcEdghw5E3xmpvC5najlMxXA_V89H2N-FVEJETcLhY1&amp;t=634776153970773750" type="text/javascript"></script>
+
+
+<script src="/school/ScriptResource.axd?d=0S-vRh9PszPdvUunBXVkXUKnARyepy3mI3zVMzRg8XsoRYsjeoTIwJI-mzuNuZrXrHDmhW4ffzN5FOBD2wt3H_-4ZjW3pGi4V8s_WKlTqEC6eFZ5Y6p4YHCtXqt8CveeVj-wOsORgwfya_uiyXN6TkbusrQRCk3cAH2IN_SE01HQjkHp0&amp;t=4c0b52c0" type="text/javascript"></script>
+<script type="text/javascript">
+//<![CDATA[
+if (typeof(Sys) === 'undefined') throw new Error('ASP.NET Ajax 客户端框架未能加载。');
+//]]>
+</script>
+
+<script src="/school/ScriptResource.axd?d=-N6b-7lOfm4h8AWg0LbPv33Pb3swC2p_Um6i5E6qBImri5BPPf8826IVJLq5B7L_cva8P8XNzpnYUPXByQ_FYxthXFW8QRRDF_1O2mfeJvp8TGxTsGkzVLe_uAOZM88Hr9kHvXDqlKJt8EIQzdVR8I8c-amH2t-qw5Z6hXzkuVzT_tkK0&amp;t=4c0b52c0" type="text/javascript"></script>
+<script src="/school/WebResource.axd?d=8qkdu8PDeJLykYR2U94CxzJHXxhh8WCOuKK25IHsxuasaD2WDmK7oIcmWSL1zhtHKK7Q-BC90uSckpf5lUNONBuxn-c1&amp;t=634776153970773750" type="text/javascript"></script>
+<div>
+
+	<input type="hidden" name="__VIEWSTATEENCRYPTED" id="__VIEWSTATEENCRYPTED" value="" />
+	<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="yk04vTbX6n8p2zZgQxVVdN3GTUNHCksZzxdeQmeyoKMkjLHSbrJrJqEW8OiWRC+Qz0WRCCNNF4p3BXaGHqUGxW7XknREGAmulNDPhN8p2TS3ak5XM4+jxlPSFBnVv78xTkKdyNMNt3F4yYtEH2XFwWBV19UF+fXaGeO1/1OSmy7VDrZma6qHDPh0BcyaaIThwzRHkbB1Q9OF5EP99IDnM3uEwb4QBYjsfeerd6COybofbsPUNkp8V4B4fyvIK1zZTY8vKIMg36ao3+pmBeY1/mG/NjOaTeAw+Vg1aeqHYRaVTTyqLLEIf4vCRw9XvwlGLae9gpc5+1k6rCA3TOdRCvDNiglMOkEFuf5E4Zo+rFUVAHQ3IHcAn/ggTTfWLWKRWahck0DDwmLwciL9x1E4WTaldR3XU9yZYlLQjFnOvDHU5E1bLvhoUnZqS2s65BRfVbZ+8bE+DHfwe3XL3+vch6gCsiY3sItHqlPV8KPOCkfnlnaL6mukTlBltkLu18BK9hk+29jjnrO9L1mg6ddnqPV/qe4=" />
+</div>
+    <script type="text/javascript">
+//<![CDATA[
+Sys.WebForms.PageRequestManager._initialize('ScriptManager1', document.getElementById('form1'));
+Sys.WebForms.PageRequestManager.getInstance()._updateControls(['tUpdatePanel1'], [], [], 90);
+//]]>
+</script>
+
+    <div class="container">
+        <div id="Head1_Panel1">
+	
+    <div class="header">
+        <div class="logo">
+            <a id="Head1_HyperLink28" title="系统首页" href="NewThesisResult.aspx"><img title="系统首页" src="images/pmlc_logo.gif" style="border-width:0px;" /></a></div>
+        <div class="login">
+            &nbsp;</div>
+        <!--导航-->
+        <div class="menu">
+            <table width="759" border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                    <td style="width: 22px;" valign="top">
+                        <img id="Head1_Image2" src="images/pmlc_menu.bg1.gif" style="border-width:0px;" />
+                    </td>
+                    <td class="channel">
+                        <a id="Head1_HyperLink1" class="menu1" href="NewThesisResult.aspx"></a>
+                        <a id="Head1_HyperLink6" class="menu6" href="Student/StuFileInfo.aspx"></a>
+                        <a id="Head1_HyperLink7" class="menu7" href="Teacher/TeacherManage.aspx"></a>
+                        <a id="Head1_HyperLink5" class="menu5" href="Data/StudentData.aspx"></a>
+                        <a id="Head1_HyperLink9" class="menu9" href="Manage/Search.aspx" target="_blank"></a>
+                        <a id="Head1_HyperLink2" class="menu2_1" href="SimResult.aspx"></a>
+                        <a id="Head1_HyperLink3" class="menu3" href="SearchResult.aspx"></a>
+                        <a id="Head1_HyperLink4" class="menu4" href="Question.aspx"></a>
+                        <a id="Head1_HyperLink8" class="menu8" href="Users/UserModPWD.aspx"></a>
+                        <a id="Head1_LinkButton1" class="menu10" href="javascript:__doPostBack('Head1$LinkButton1','')"></a>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+
+        <div id="UpdatePanel1">
+	
+                <div class="Mainbody">
+                    <div class="sidebar">
+                        <div class="time">
+                            <table border="0" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td class="p1" colspan="2">
+                                        账号学校名称：<span id="xxLbl">XXXX大学</span><br />
+                                        账号有效期至：<span id="lbEtime">2014-05-02</span><br />
+                                        
+                                        <span id="Label4">剩余上传篇数：</span><span id="lbLeftFile">6313</span><span id="Label_num_enter"><br /></span>
+                                        上传文献最大字符数：<span id="lblMax">80000</span><br />
+                                        
+                                        <div id="logPanel">
+		
+                                            上次登录时间：<span id="Label_LastTime">XXXX</span><br />
+                                            上次登录IP：<span id="Label_LastIP">XXXXXX</span>
+	</div>
+                                        </span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div>
+                            <img src="images/pmlc_sidebay.line.gif"></div>
+                        <div class="time">
+                            <table width="199" border="0" align="center" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td>
+                                        <img src="images/pmlc_41.gif">
+                                    </td>
+                                    <td>
+                                        <span class="p1-b">检测文件夹</span>
+                                    </td>
+                                    <td>
+                                        <a id="HyperLink2" href="upload/folder.aspx"><img src="images/pmlc_btn6.gif" style="border-width:0px;" /></a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="lm">
+                            <table>
+                                <tr>
+                                    <td width="145" class="p1-b">
+                                        <span id="wjmLbl" title="xx">xxx</span>
+                                    </td>
+                                    <td width="15">
+                                        <a id="HyperLink_ModifyFolder" title="修改文件夹" href="upload/folder.aspx?id=6918"><img title="修改文件夹" src="images/pmlc_icon7.gif" style="border-width:0px;" /></a>
+                                    </td>
+                                    <td>
+                                        <input type="image" name="ImageButton4" id="ImageButton4" title="删除该文件夹" src="images/pmlc_icon8.gif" onclick="return confirm('您确认要删除此文件夹吗?');" style="border-width:0px;" />
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="folder">
+                            <table width="100%" border="0" align="center" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td background="images/pmlc_33.gif">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td width="65" class="p1">
+                                        创建时间：
+                                    </td>
+                                    <td width="134">
+                                        2013-5-6 15:52:26
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td width="65" class="p1">
+                                        比对范围：
+                                    </td>
+                                    <td width="134">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="p3" colspan="2" style="width: 192px">
+                                        中国学术期刊网络出版总库<br />中国博士学位论文全文数据库/中国优秀硕士学位论文全文数据库<br />中国重要会议论文全文数据库<br />中国重要报纸全文数据库<br />中国专利全文数据库<br />大学生论文联合比对库<br />互联网资源<br />英文数据库(涵盖期刊、博硕、会议的英文数据以及德国Springer、英国Taylor&amp;Francis 期刊数据库等)<br />港澳台学术文献库<br />优先出版文献库
+                                    </td>
+                                </tr>
+                                
+                            </table>
+                        </div>
+                        <div class="time" style="text-align: center;">
+                            <div>
+
+	</div>
+                        </div>
+                    </div>
+                    <div class="pagebody">
+                        <div class="text1">
+                            <div style="display: none; position: absolute; z-index: 200; width: 760px; height: auto;
+                                background-color: #f0f8eb;" id="div_ckwx1">
+                                <div style="display: none;">
+                                    <input type="submit" name="bindBtn" value="sss" id="bindBtn" /></div>
+                                <div class="window">
+                                    <div class="w-page">
+                                        <table width="100%" cellpadding="0" border="0" cellspacing="0">
+                                            <tr>
+                                                <td class="w_t_l">
+                                                    &nbsp;
+                                                </td>
+                                                <td class="w_t_c">
+                                                    上传论文
+                                                </td>
+                                                <td class="w_t_r" onclick="CloseCKWX1()">
+                                                    &nbsp;
+                                                </td>
+                                            </tr>
+                                        </table>
+                                        <table width="100%" cellpadding="0" border="0" cellspacing="0">
+                                            <tr>
+                                                <td class="w_b" style="padding-bottom: 15px;">
+                                                    <div id="TabbedPanels2" class="TabbedPanels">
+                                                        <div class="TabbedPanelsTabGroup" style="overflow: hidden;">
+                                                            <div class="TabbedPanelsTab" onclick="up1();" tabindex="0">
+                                                                上传单篇文件</div>
+                                                            <div class="TabbedPanelsTab" onclick="up2();" tabindex="0">
+                                                                上传压缩文件</div>
+                                                            <div class="TabbedPanelsTab" onclick="up3();" tabindex="0">
+                                                                手工录入</div>
+                                                            <div>
+                                                                <span class="p1">选择文件夹：
+                                                                    <select name="ddlFolderlist" id="ddlFolderlist" style="width:140px;">
+		<option selected="selected" value="6918">教务处</option>
+
+	</select>
+                                                                    <a href="#" onclick="CloseCKWX1();showCKWX2();">
+                                                                        <img id="HyperLink8" src="images/pmlc_btn6.gif" alt="" /></a></span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="TabbedPanelsContentGroup">
+                                                            <div class="TabbedPanelsContent">
+                                                                <span class="p1">上传的检测文献文件名按以下三种格式命名，有助于提取作者姓名。<br>
+                                                                    1 "作者姓名_学号_文献名称"或者"作者姓名-学号-文献名称"，例如"张三_0305133_信息系统.doc"或者"张三-0305133-信息系统.doc"<br />
+                                                                    2 "学院号_学号_作者"或者"学院号-学号-作者"，例如"110_200551100002_李三.doc"或者"110-200551100002-李三.doc"<br />
+                                                                    3 "学号_作者_文献名称"或者"学号-作者-文献名称"，例如"200551100002_李三_信息系统.doc"或者"200551100002-李三-信息系统.doc"
+                                                                </span>
+                                                                <table width="100%" bgcolor="#FFFFFF">
+                                                                    <tr>
+                                                                        <td class="p6" style="width: 200px;">
+                                                                            篇名：
+                                                                        </td>
+                                                                        <td width="350" align="left" colspan="2">
+                                                                            <input name="TextBox1" type="text" maxlength="75" id="TextBox1" style="width:264px;" />
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr style="display: none;">
+                                                                        <td class="p6">
+                                                                            院系：
+                                                                        </td>
+                                                                        <td align="left" colspan="2">
+                                                                            <input name="TextBox6" type="text" id="TextBox6" style="width:264px;" />
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td class="p6">
+                                                                            作者：
+                                                                        </td>
+                                                                        <td align="left" colspan="2">
+                                                                            <input name="TextBox5" type="text" id="TextBox5" style="width:264px;" />
+                                                                            <span></span>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td class="p6">
+                                                                            待检测原文：
+                                                                        </td>
+                                                                        <td align="left">
+                                                                            <input type="text" id="txtFileName" style="width: 264px;" />
+                                                                            &nbsp;&nbsp;<span id="spanButtonPlaceholder"></span>支持doc,docx,caj,txt,pdf,kdh,nh格式
+                                                                        </td>
+                                                                        <td align="left">
+                                                                        </td>
+                                                                    </tr>
+                                                                    
+                                                                </table>
+                                                                <div style="text-align: center; padding-top: 30px; padding-bottom: 30px;">
+                                                                    <a id="shangchuanBtn1" href="javascript:upfiles('file_id');">
+                                                                        <img alt="" src="images/pmlc_btn7.gif" border="0" /></a>
+                                                                </div>
+                                                            </div>
+                                                            <div class="TabbedPanelsContent">
+                                                                <span class="p1">上传的检测文献文件名按以下三种格式命名，有助于提取作者姓名。<br />
+                                                                    1 "作者姓名_学号_文献名称"或者"作者姓名-学号-文献名称"，例如"张三_0305133_信息系统.doc"或者"张三-0305133-信息系统.doc"<br />
+                                                                    2 "学院号_学号_作者"或者"学院号-学号-作者"，例如"110_200551100002_李三.doc"或者"110-200551100002-李三.doc"<br />
+                                                                    3 "学号_作者_文献名称"或者"学号-作者-文献名称"，例如"200551100002_李三_信息系统.doc"或者"200551100002-李三-信息系统.doc"
+                                                                </span>
+                                                                <table width="100%" bgcolor="#FFFFFF">
+                                                                    <tr>
+                                                                        <td class="p6">
+                                                                            待检测数据：
+                                                                        </td>
+                                                                        <td align="left" style="width: 260px;">
+                                                                            <input type="text" id="txtRarName" maxlength="50" style="width: 240px;" />
+                                                                        </td>
+                                                                        <td>
+                                                                            <span id="spanButtonPlaceholderrar"></span>支持rar,zip格式
+                                                                        </td>
+                                                                    </tr>
+                                                                </table>
+                                                                <div style="text-align: center; padding-top: 30px; padding-bottom: 30px;">
+                                                                    <a id="shangchuanBtn2" style="display: none;" href="javascript:uprar('file_id');">
+                                                                        <img alt="" src="images/pmlc_btn7.gif" border="0" /></a>
+                                                                </div>
+                                                            </div>
+                                                            <div class="TabbedPanelsContent">
+                                                                <table width="100%">
+                                                                    <tr>
+                                                                        <td class="p6">
+                                                                            篇名：
+                                                                        </td>
+                                                                        <td class="p3-Sim">
+                                                                            <input name="TextBox2" type="text" maxlength="75" id="TextBox2" style="width:540px;" /><span
+                                                                                style="color: Red;">*</span>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr style="display: none;">
+                                                                        <td class="p6">
+                                                                            院系：
+                                                                        </td>
+                                                                        <td class="p3-Sim">
+                                                                            <input name="tbUnit" type="text" id="tbUnit" style="width:540px;" />
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td class="p6">
+                                                                            作者：
+                                                                        </td>
+                                                                        <td class="p3-Sim">
+                                                                            <input name="TextBox3" type="text" id="TextBox3" style="width:540px;" />
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td class="p6" align="right" valign="top">
+                                                                            待检测正文：
+                                                                        </td>
+                                                                        <td class="p3-Sim">
+                                                                            <textarea name="TextBox4" rows="2" cols="20" id="TextBox4" style="height:209px;width:550px;"></textarea>
+                                                                        </td>
+                                                                    </tr>
+                                                                </table>
+                                                                <div style="text-align: center; padding-top: 30px; padding-bottom: 30px;">
+                                                                    <a onclick="return Check_meu();" id="LinkButton2" href="javascript:__doPostBack('LinkButton2','')" style="display: none;"><img alt="" src="images/pmlc_btn7.gif"  border="0"/></a>
+                                                                </div>
+                                                            </div>
+                                                            <div id="divFileProgressContainer" style="float: left; height: 50px; width: 700px;
+                                                                overflow: hidden; background-image: url(images/login_bg.jpg); margin-left: 8px;
+                                                                display: none;">
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <input type="hidden" id="file_id" value="" />
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="table">
+                                <div class="text1222">
+                                    <table width="734" border="0" cellpadding="0" cellspacing="0" height="51">
+                                        <tr>
+                                            <td width="461">
+                                            </td>
+                                            <td width="273">
+                                                <a class="channel6" onclick="showCKWX1();" href="#"></a>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <table width="732" border="0" cellspacing="0" cellpadding="0" align="center">
+                                    <tr>
+                                        <td colspan="6">
+                                        </td>
+                                    </tr>
+                                </table>
+                                <table width="734" border="0" cellspacing="0" cellpadding="0" height="40" background="images/pmlc_list.bg1.gif">
+                                    <tr>
+                                        <td width="100">
+                                        </td>
+                                        <td width="230" align="left">
+                                            <select name="DDL1" id="DDL1">
+		<option value="篇名">按篇名</option>
+		<option value="作者">按作者</option>
+
+	</select>
+                                            <input name="TB1" type="text" id="TB1" style="width:150px;" />
+                                        </td>
+                                        <td width="50">
+                                            <input type="image" name="ImageButton5" id="ImageButton5" align="middle" src="images/pmlc_btn9.gif" style="border-width:0px;" />
+                                        </td>
+                                        <td width="130">
+                                            <select name="DDLJCZT" onchange="javascript:setTimeout('__doPostBack(\'DDLJCZT\',\'\')', 0)" id="DDLJCZT">
+		<option selected="selected" value="0">筛选记录...</option>
+		<option value="2">处理中</option>
+		<option value="4">无问题</option>
+		<option value="3">问题记录(疑似)</option>
+
+	</select>
+                                        </td>
+                                        <!--排序链接-->
+                                        <td align="center">
+                                            <table>
+                                                <tr>
+                                                    <td>
+                                                        <img id="Image_ListType" src="images/list-2.gif" style="border-width:0px;" />
+                                                    </td>
+                                                    <td>
+                                                        <a id="LinkButton_ListType" href="javascript:__doPostBack('LinkButton_ListType','')">详细列表</a>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td align="right">
+                                            排序：<a id="LinkButton_Overlap" class="Order1" href="javascript:__doPostBack('LinkButton_Overlap','')">检测结果</a>&nbsp;&nbsp;<a id="LinkButton_Author" class="Order1" href="javascript:__doPostBack('LinkButton_Author','')">作者</a>&nbsp;
+                                        </td>
+                                    </tr>
+                                </table>
+                                
+                                <div id="Panel_HaveRe">
+		
+                                    <table width="734" border="0" cellspacing="0" cellpadding="0" class="table1">
+                                        <tr>
+                                            <td style="width: 100px;" align="right" valign="top">
+                                                <input type="image" name="ImageButton1" id="ImageButton1" src="images/a.gif" onclick="showType1('no');return false;" style="border-width:0px;" />
+                                            </td>
+                                            <td style="width: 100px;" align="right" valign="top">
+                                                <input type="image" name="ImageButton2" id="ImageButton2" src="images/b.gif" onclick="showType('yes');return false;" style="border-width:0px;" />
+                                            </td>
+                                            <td style="width: 70px;" align="right" valign="top">
+                                                <input type="image" name="ImageButton6" id="ImageButton6" src="images/c1.gif" style="border-width:0px;" />
+                                            </td>
+                                            <td style="width: 50px;" align="right" valign="top">
+                                                <input type="image" name="ImageButton11" id="ImageButton11" src="images/2.gif" onclick="if(Selected()){return confirm('是否执行删除操作？');}else{return false;};" style="border-width:0px;" />
+                                            </td>
+                                            <td align="center">
+                                                <span id="Label_Count">查询到2篇文献</span>
+                                            </td>
+                                            <td class="p6" style="width: 260px;">
+                                                
+		<!-- AspNetPager V7.0.2 for VS2005 & VS2008  Copyright:2003-2007 Webdiyer (www.webdiyer.com) -->
+		<!--记录总数只有一页，AspNetPager已自动隐藏，若需在只有一页数据时显示AspNetPager，请将AlwaysShow属性值设为true！-->
+		<!-- AspNetPager V7.0.2 for VS2005 & VS2008 End -->
+
+		
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    <div>
+			<table class="table_list_gv" cellspacing="0" rules="all" border="1" id="GridView2" style="width:734px;border-collapse:collapse;">
+				<tr class="head_tr">
+					<th scope="col">
+                                                    <input id="Checkbox1" type="checkbox" onclick="SelectA(this)" />选择</th><th scope="col">篇名</th><th scope="col">作者</th><th scope="col">检测结果</th><th scope="col">上传日期</th><th scope="col">下载</th><th scope="col">报告单</th>
+				</tr><tr class="row_tr">
+					<td align="center" style="width:55px;">
+                                                    <input type="checkbox" name="SR_FileNameS" onclick="checkMark(this)" value="40188953" />
+                                                </td><td class="huanhang" align="left" valign="middle">
+                                                    <a href='filesection.aspx?ID=40188953' target="_blank">200551100002_李三_信息系统</a>
+                                                </td><td class="huanhang" align="center" valign="middle" style="width:50px;">
+                                                    <a href=Search.aspx?zz=%u674e%u4e09&fo=6918&type=admin target=_blank>李三</a>
+                                                </td><td align="left" valign="middle" style="width:60px;">
+                                                    <div class="per_y" title="文字复制比">4.3%</div><div class="words" title="重合字数">2348</div>
+                                                </td><td align="center" valign="middle" style="width:80px;">
+                                                    2013-05-07
+                                                </td><td align="center" valign="middle" style="width:50px;">
+                                                    <a target="_blank" href=" http://checkdownload.cnki.net/thesisdownload/?downType=0&user=wxbd0572&userServerID=1&fileID=40188953&check=45f714007e55a0a6854ce466cdb1b60c" ><img src="images/dpxz.gif" alt="下载" border="0" /></a>
+                                                </td><td align="center" style="width:90px;">
+                                                    <select onchange="if(this.value != ''){window.open(this.value);}"><option value="">选择报告单</option><option value="Report.aspx?LeftFile=40188953&t=p">简洁</option><option value="Report.aspx?LeftFile=40188953&t=a">全文(标明引文)</option><option value="Report.aspx?LeftFile=40188953&t=s">去除本人文献</option></select>
+                                                </td>
+				</tr><tr class="alter_row_tr">
+					<td align="center" style="width:55px;">
+                                                    <input type="checkbox" name="SR_FileNameS" onclick="checkMark(this)" value="40182020" />
+                                                </td><td class="huanhang" align="left" valign="middle">
+                                                    <a href='maxred.aspx?ID=40182020' target="_blank">我国利率政策有效性研究(2)</a>
+                                                </td><td class="huanhang" align="center" valign="middle" style="width:50px;">
+                                                    <a href=Search.aspx?zz=%u9646%u6021&fo=6918&type=admin target=_blank>陆怡</a>
+                                                </td><td align="left" valign="middle" style="width:60px;">
+                                                    <div class="per_g" title="文字复制比">0%</div><div class="words" title="重合字数">0</div>
+                                                </td><td align="center" valign="middle" style="width:80px;">
+                                                    2013-05-06
+                                                </td><td align="center" valign="middle" style="width:50px;">
+                                                    <a target="_blank" href=" http://checkdownload.cnki.net/thesisdownload/?downType=0&user=wxbd0572&userServerID=1&fileID=40182020&check=5f6cad62f7fa352955321bc1b4989912" ><img src="images/dpxz.gif" alt="下载" border="0" /></a>
+                                                </td><td align="center" style="width:90px;">
+                                                    <select onchange="if(this.value != ''){window.open(this.value);}"><option value="">选择报告单</option><option value="Report.aspx?LeftFile=40182020&t=p">简洁</option><option value="Report.aspx?LeftFile=40182020&t=a">全文(标明引文)</option><option value="Report.aspx?LeftFile=40182020&t=s">去除本人文献</option></select>
+                                                </td>
+				</tr>
+			</table>
+		</div>
+                                    <div id="list_type_2">
+                                        
+                                    </div>
+                                    <table width="734" border="0" cellspacing="0" cellpadding="0" class="table1">
+                                        <tr>
+                                            <td style="width: 380px; text-align: left;" valign="top">
+                                                <ul id="nav2" class="list_menu2">
+                                                    <li style="width: 83px;">
+                                                        <div class="clear">
+                                                            <img src="images/cc3.gif" alt="" id="Img8" /></div>
+                                                        <ul>
+                                                            <li>
+                                                                <a id="LinkButton12" title="把选中论文打包，并下载！" href="javascript:__doPostBack('LinkButton12','')">选中的论文打包下载</a>
+                                                            </li>
+                                                            <li>
+                                                                <a id="LinkButton13" href="javascript:__doPostBack('LinkButton13','')">全部的论文打包下载</a></li>
+                                                            <li>
+                                                                <a id="LinkButton14" title="显示论文下载任务列表" href="javascript:__doPostBack('LinkButton14','')">显示论文下载列表</a>
+                                                            </li>
+                                                        </ul>
+                                                    </li>
+                                                    <li style="width: 87px;">
+                                                        <div class="clear">
+                                                            <img src="images/cc4.gif" alt="" id="Img2" /></div>
+                                                        <ul>
+                                                            <li>
+                                                                <a onclick="showType1('no');return false;" id="LinkButton6" title="把选中文献生成报告单，并下载！" href="javascript:__doPostBack('LinkButton6','')">选中文献报告单</a>
+                                                            </li>
+                                                            <li>
+                                                                <a onclick="showType('yes');return false;" id="LinkButton7" href="javascript:__doPostBack('LinkButton7','')">文件夹报告单</a></li>
+                                                            <li>
+                                                                <a id="LinkButton8" title="下载报告单" href="javascript:__doPostBack('LinkButton8','')">下载报告单</a>
+                                                            </li>
+                                                        </ul>
+                                                    </li>
+                                                    <li style="width: 65px;">
+                                                        <div class="clear">
+                                                            <img src="images/pmlc_btn4.gif" alt="" /></div>
+                                                        <ul style="height: 200px; overflow-y: scroll; width: 180px;">
+                                                            
+                                                                    <li>
+                                                                        <a id="Repeater2_ctl00_LinkButton_Remove" href="javascript:__doPostBack('Repeater2$ctl00$LinkButton_Remove','')">教务处</a>
+                                                                    </li>
+                                                                
+                                                        </ul>
+                                                    </li>
+                                                    <li style="width: 65px;">
+                                                        <a id="lk_bnhj2" title="班内互检" href="CrossCheck.aspx?bjType=sr&amp;f=6918" target="_blank"><img title="班内互检" src="images/pmlc_btn26.gif" style="border-width:0px;" /></a></li>
+                                                    <li style="width: 80px;">
+                                                        <div class="clear">
+                                                            <img src="images/6.gif" alt="" id="Img4" /></div>
+                                                        <ul>
+                                                            <li><a onclick="return Selected();" href='DownLoadExcel.aspx?wjz=xuanze' target='_blank'>
+                                                                当前选中的文件信息</a> </li>
+                                                            <li>
+                                                                <a id="HyperLink_Excel2" title="生成Excel" href="DownLoadExcel.aspx?wjz=6918" target="_blank">当前所有的文件信息</a>
+                                                            </li>
+                                                        </ul>
+                                                    </li>
+                                                </ul>
+                                            </td>
+                                            <td style="text-align: left;" valign="top">
+                                                <input type="image" name="ImageButton7" id="ImageButton7" src="images/2.gif" onclick="if(Selected()){return confirm('是否执行删除操作？');}else{return false;};" style="border-width:0px;" />
+                                            </td>
+                                            <td class="p6" style="width: 260px;">
+                                                
+		<!-- AspNetPager V7.0.2 for VS2005 & VS2008  Copyright:2003-2007 Webdiyer (www.webdiyer.com) -->
+		<!--记录总数只有一页，AspNetPager已自动隐藏，若需在只有一页数据时显示AspNetPager，请将AlwaysShow属性值设为true！-->
+		<!-- AspNetPager V7.0.2 for VS2005 & VS2008 End -->
+
+		
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    <table border="0" cellpadding="0" cellspacing="0">
+                                        <tr>
+                                            <td>
+                                                <img id="Check_EX1_Image1" src="images/pmlc_tu1.gif" style="border-width:0px;" />
+                                            </td>
+                                        </tr>
+                                    </table>
+                                
+	</div>
+                            </div>
+                            <div class="text2">
+                            </div>
+                        </div>
+                    </div>
+                    <div style="font: 0px/0px sans-serif; clear: both; display: block">
+                    </div>
+                </div>
+                <div id="mask">
+                </div>
+                
+                <div style="display: none; position: absolute; z-index: 200; width: 760px; height: 320px;
+                    background-color: #f0f8eb;" id="div_ckwx4">
+                    <table width="100%" cellpadding="0" border="0" cellspacing="0">
+                        <tr>
+                            <td class="w_t_l">
+                                &nbsp;
+                            </td>
+                            <td class="w_t_c">
+                                上传论文
+                            </td>
+                            <td class="w_t_r" onclick="CloseCKWX();">
+                                &nbsp;
+                            </td>
+                        </tr>
+                    </table>
+                    <table width="100%" cellpadding="0" border="0" cellspacing="0">
+                        <tr>
+                            <td style="text-align: center; height: 320px;">
+                                <div>
+                                    <div>
+                                        <img src="images/loading.gif" alt="loading" border="0" />
+                                    </div>
+                                    正在上传论文，这可能需要一些时间，请稍等。
+                                    <div style="clear: both;">
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div id="div_ckwx" style="display: none; position: absolute; z-index: 200; width: 700px; background-color: #f0f8eb;
+                    height: auto;">
+                    <table width="100%" cellpadding="0" border="0" cellspacing="0">
+                        <tr>
+                            <td class="w_t_l">
+                                &nbsp;
+                            </td>
+                            <td class="w_t_c">
+                                提示：压缩包的解压密码为您登录本系统的<span style="color: Red">账号</span>，如果账号中含有字母，请用小写字母！
+                            </td>
+                            <td class="w_t_r" onclick="CloseCKWX()">
+                                &nbsp;
+                            </td>
+                        </tr>
+                    </table>
+                    <div class="w_b" style="height: 380px; line-height: 18px; overflow-y: scroll; word-break: break-all;
+                        word-wrap: break-word; background-color: #f0f8eb; text-align: center; width: 698px;">
+                        <div>
+
+	</div>
+                    </div>
+                </div>
+                <div id="div_choiceType" style="display: none; position: absolute; z-index: 200; width: 700px; height: auto;
+                    background-color: #f0f8eb; margin: auto;">
+                    <table width="100%" cellpadding="0" border="0" cellspacing="0">
+                        <tr>
+                            <td class="w_t_l">
+                                &nbsp;
+                            </td>
+                            <td class="w_t_c">
+                                &nbsp;<span id="r_a" style="display: none;">将此文件夹下所有文章生成报告单，请选择要生成的报告单类型。</span><span
+                                    id="r_p" style="display: none;">将选中文章生成报告单，请选择要生成的报告单类型。</span>
+                            </td>
+                            <td class="w_t_r" onclick="CloseType()">
+                                &nbsp;
+                            </td>
+                        </tr>
+                    </table>
+                    <table width="100%" cellpadding="0" border="0" cellspacing="0">
+                        <tr>
+                            <td class="w_b" align="center" style="height: 269px;" valign="top">
+                                <br />
+                                <table id="RadioButtonList1" border="0" style="width:500px;">
+		<tr>
+			<td><input id="RadioButtonList1_0" type="radio" name="RadioButtonList1" value="2" checked="checked" /><label for="RadioButtonList1_0">全文（标明引文）报告单</label></td><td><input id="RadioButtonList1_1" type="radio" name="RadioButtonList1" value="1" /><label for="RadioButtonList1_1">简洁报告单</label></td><td><input id="RadioButtonList1_2" type="radio" name="RadioButtonList1" value="3" /><label for="RadioButtonList1_2">去除本人文献报告单</label></td>
+		</tr>
+	</table>
+                                <br />
+                                <input name="Hidden_Type" type="hidden" id="Hidden_Type" />
+                                <br />
+                                <a onclick="CloseType();" id="LinkButton1" class="BigButton" href="javascript:__doPostBack('LinkButton1','')">提交</a>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div id="div_ckwxxz" style="display: none; position: absolute; z-index: 200; width: 700px; height: auto;
+                    background-color: #f0f8eb;">
+                    <table width="100%" cellpadding="0" border="0" cellspacing="0">
+                        <tr>
+                            <td class="w_t_l">
+                                &nbsp;
+                            </td>
+                            <td class="w_t_c">
+                                提示：压缩包的解压密码为您登录本系统的<span style="color: Red">账号</span>，如果账号中含有字母，请用小写字母！
+                            </td>
+                            <td class="w_t_r" onclick="CloseCKWXXZ()">
+                                &nbsp;
+                            </td>
+                        </tr>
+                    </table>
+                    <div class="w_b" style="height: 380px; line-height: 18px; overflow-y: scroll; word-break: break-all;
+                        word-wrap: break-word; background-color: #f0f8eb; text-align: center; width: 698px;">
+                        <div>
+
+	</div>
+                    </div>
+                </div>
+                <div style="display: none; position: absolute; z-index: 200; width: 760px; height: auto;
+                    background-color: #FFFFFF;" id="div_ckwx2">
+                    <table width="100%" cellpadding="0" border="0" cellspacing="0">
+                        <tr>
+                            <td class="w_t_l">
+                                &nbsp;
+                            </td>
+                            <td class="w_t_c">
+                                创建新的文件夹
+                            </td>
+                            <td class="w_t_r" onclick="CloseCKWX2();showCKWX1();">
+                                &nbsp;
+                            </td>
+                        </tr>
+                    </table>
+                    <table width="100%" cellpadding="0" border="0" cellspacing="0">
+                        <tr>
+                            <td class="w_b">
+                                <div class="table_add">
+                                    <table border="0" cellpadding="2" cellspacing="0">
+                                        <tr>
+                                            <td colspan="2">
+                                                <img src="images/xt.lm_5.gif">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td width="200" class="p7 txt_right">
+                                                文件夹名称：
+                                            </td>
+                                            <td width="320">
+                                                <input name="tbFolderName" type="text" id="tbFolderName" style="width:202px;" /><span style="color: Red;">*</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td valign="top" class="p7 txt_right">
+                                                文件夹描述：
+                                            </td>
+                                            <td>
+                                                <textarea name="tbFolderDes" rows="2" cols="20" id="tbFolderDes" style="height:42px;width:71%;"></textarea>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2">
+                                                <img src="images/xt.lm_6.gif">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="p7 txt_right">
+                                                仅去除第一作者本人文献：
+                                            </td>
+                                            <td class="p7">
+                                                <input id="CheckBox1" type="checkbox" name="CheckBox1" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td valign="top" class="p7 txt_right">
+                                                选择比对库：
+                                            </td>
+                                            <td class="p7">
+                                                <table id="cbf2" cellpadding="0" border="0">
+		<tr>
+			<td><input id="cbf2_0" type="checkbox" name="cbf2$0" checked="checked" /><label for="cbf2_0">中国学术期刊网络出版总库</label></td>
+		</tr><tr>
+			<td><input id="cbf2_1" type="checkbox" name="cbf2$1" checked="checked" /><label for="cbf2_1">中国博士学位论文全文数据库/中国优秀硕士学位论文全文数据库</label></td>
+		</tr><tr>
+			<td><input id="cbf2_2" type="checkbox" name="cbf2$2" checked="checked" /><label for="cbf2_2">中国重要会议论文全文数据库</label></td>
+		</tr><tr>
+			<td><input id="cbf2_3" type="checkbox" name="cbf2$3" checked="checked" /><label for="cbf2_3">中国重要报纸全文数据库</label></td>
+		</tr><tr>
+			<td><input id="cbf2_4" type="checkbox" name="cbf2$4" checked="checked" /><label for="cbf2_4">中国专利全文数据库</label></td>
+		</tr><tr>
+			<td><input id="cbf2_5" type="checkbox" name="cbf2$5" checked="checked" /><label for="cbf2_5">大学生论文联合比对库</label></td>
+		</tr><tr>
+			<td><input id="cbf2_6" type="checkbox" name="cbf2$6" checked="checked" /><label for="cbf2_6">互联网资源</label></td>
+		</tr><tr>
+			<td><input id="cbf2_7" type="checkbox" name="cbf2$7" checked="checked" /><label for="cbf2_7">英文数据库</label></td>
+		</tr><tr>
+			<td><input id="cbf2_8" type="checkbox" name="cbf2$8" checked="checked" /><label for="cbf2_8">港澳台学术文献库</label></td>
+		</tr><tr>
+			<td><input id="cbf2_9" type="checkbox" name="cbf2$9" checked="checked" /><label for="cbf2_9"><b>优先出版文献库</b></label></td>
+		</tr>
+	</table>
+                                            </td>
+                                        </tr>
+                                        <tr id="tr_comparetime">
+                                            <td class="p7 txt_right">
+                                                比对时间：
+                                            </td>
+                                            <td class="p7">
+                                                从<input name="Text_time1" type="text" id="Text_time1" style="width: 75px" readonly="readonly" maxlength="10" value="1900-1-1" />&nbsp;到&nbsp;
+                                                <input name="Text_time2" type="text" id="Text_time2" style="width: 75px" readonly="readonly" maxlength="10" value="2099-12-31" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="p7">
+                                                &nbsp;
+                                            </td>
+                                            <td style="padding-top: 20px; padding-bottom: 20px; text-align: left;">
+                                                <a onclick="return checkname();" id="LinkButton9" class="BigButton" href="javascript:__doPostBack('LinkButton9','')">确定</a>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <script type="text/javascript">
+                    SetP(); $('#Text2').simpleDatepicker(); $('#Text1').simpleDatepicker(); $('#Text_time1').simpleDatepicker(); $('#Text_time2').simpleDatepicker();
+                </script>
+
+            
+</div>
+        <div id="UpdateProgress1" style="display:none;">
+	
+                <div class="Load_Div">
+                    <img src="images/ajax-loaderg.gif" alt="" />数据加载中
+                </div>
+            
+</div>
+        
+<div class="footer">
+    <p class="p2">
+        京ICP证040431号 互联网出版许可证 新出网证（京）字008号<br />
+        北京市公安局海淀分局 备案号：110 1081725<br />
+        &copy; 2008 中国知网(cnki) 同方知网（北京）技术有限公司<br />
+    </p>
+</div>
+
+    </div>
+
+    <script type="text/javascript">
+        function ChangeEN(ck) {
+            var obj = Fid("cbf2");
+
+            if (obj != null) {
+                if (ck.checked) {
+                    var temp = obj.getElementsByTagName("input");
+
+                    var temp_str = "";
+
+                    for (var i = 0; i < temp.length && i < 1; i++) {
+                        temp[i].checked = false;
+                        //temp[i].style.display = "none";
+                        temp[i].disabled = true;
+
+                        var time_obj = Fid("tr_comparetime");
+
+                        if (time_obj != null) {
+                            time_obj.style.display = "none";
+                        }
+                    }
+
+                    //alert(temp_str);
+                }
+                else {
+                    var temp = obj.getElementsByTagName("input");
+
+                    for (var i = 0; i < temp.length && i < 1; i++) {
+                        temp[i].disabled = false;
+                        //temp[i].style.display = "";
+
+                        var time_obj = Fid("tr_comparetime");
+
+                        if (time_obj != null) {
+                            time_obj.style.display = "";
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <script type="text/JavaScript">
+
+        function isDigit() {
+            var s = document.getElementById('Text2').value;
+            var t = document.getElementById('Text1').value;
+            var patrn = /^[0-9]{4}$/;
+            if (!patrn.exec(s) || !patrn.exec(t)) {
+                alert('年份格式不正确!');
+                return false;
+            }
+            return true;
+        }
+        function Check_SIG() {
+
+            var checkbox2 = document.getElementsByName('checkbox2')
+            var checkbox1 = document.getElementsByName('checkbox1')
+
+            for (var i = 0; i < checkbox1.length; i++) {
+                checkbox1[i].checked = "";
+
+            }
+            for (var i = 0; i < checkbox2.length; i++) {
+                checkbox2[i].checked = "";
+
+            }
+
+        }
+        function Check_INKI() {
+
+            var checkbox2 = document.getElementsByName('checkbox2')
+            var checkbox3 = document.getElementsByName('checkbox3')
+
+            for (var i = 0; i < checkbox3.length; i++) {
+                checkbox3[i].checked = "checked";
+
+            }
+            for (var i = 0; i < checkbox2.length; i++) {
+                checkbox2[i].checked = "";
+
+            }
+
+        }
+
+        function Check_INDI() {
+
+            var checkbox1 = document.getElementsByName('checkbox1')
+            var checkbox3 = document.getElementsByName('checkbox3')
+
+            for (var i = 0; i < checkbox3.length; i++) {
+                checkbox3[i].checked = "";
+            }
+            for (var i = 0; i < checkbox1.length; i++) {
+                checkbox1[i].checked = "";
+            }
+
+
+        }
+
+        function all(t) {
+            var checkbox = document.getElementById('checkall').getElementsByTagName('input')
+            var b = true;
+            if (t == "y") {
+                b = true;
+            }
+            if (t == "n") {
+                b = false;
+            }
+            for (var i = 0; i < checkbox.length; i++) {
+                checkbox[i].checked = b;
+            }
+        }
+        function showDisplay(theId) {
+            var isDispaly = document.getElementById(theId).style.display;
+            if (isDispaly == "none") {
+                document.getElementById(theId).style.display = "";
+            }
+            else {
+                document.getElementById(theId).style.display = "none";
+            }
+        }
+        function checkname() {
+            var name = document.getElementById('tbFolderName').value;
+            var miaoshu = document.getElementById('tbFolderDes').value;
+            if (name == "") {
+                alert('文件夹名称不能为空！');
+                return false;
+            }
+            if (name.length > 15) {
+                alert('文件夹名称过长！');
+                return false;
+            }
+            if (miaoshu.length > 100) {
+                alert('文件描述名称过长！');
+                return false;
+            }
+            return true;
+
+        }
+    </script>
+
+    <script type="text/javascript">
+        var swfu;
+        function SetUp() {
+            swfu = new SWFUpload({
+
+                upload_url: "upload/receivefiles.aspx",
+                post_params: {
+                    "ASPSESSID": "gojaxz45fco34g3kknhmlv45"
+                },
+                file_size_limit: "300 MB",
+                file_types: "*.doc;*.docx;*.txt;*.caj;*.pdf;*.kdh;*.nh;*.eml;*.rtf",
+                file_types_description: "File Types",
+                file_upload_limit: 0,
+
+                swfupload_preload_handler: preLoad,
+                swfupload_load_failed_handler: loadFailed,
+                file_queued_handler: fileQueued,
+                file_queue_error_handler: fileQueueError,
+                file_dialog_complete_handler: fileDialogComplete,
+                upload_progress_handler: uploadProgress,
+                upload_error_handler: uploadError,
+                upload_success_handler: uploadSuccess,
+                upload_complete_handler: uploadComplete,
+                file_dialog_start_handler: fileDialogStart,
+                upload_start_handler: uploadStart,
+
+
+                button_image_url: "images/SwfButtonNoText_40x22.png",
+                button_placeholder_id: "spanButtonPlaceholder",
+                button_width: 40,
+                button_height: 22,
+                button_text: '<span class="button">浏览</span></span>',
+                button_text_style: '.button { font-family: Helvetica, Arial, sans-serif; font-size: 14pt; } .buttonSmall { font-size: 10pt; }',
+                button_text_top_padding: 1,
+                button_text_left_padding: 5,
+
+
+                flash_url: "SwfUpload/swfupload.swf",
+                flash9_url: "SwfUpload/swfupload_FP9.swf",
+
+                custom_settings: {
+                    upload_target: "divFileProgressContainer"
+                },
+
+
+                debug: false
+            });
+
+            swfurar = new SWFUpload({
+
+                upload_url: "upload/receivefiles.aspx",
+                post_params: {
+                    "ASPSESSID": "gojaxz45fco34g3kknhmlv45"
+                },
+                file_size_limit: "300 MB",
+                file_types: "*.rar;*.zip",
+                file_types_description: "File Types",
+                file_upload_limit: 0,
+
+                swfupload_preload_handler: preLoad,
+                swfupload_load_failed_handler: loadFailed,
+                file_queued_handler: fileQueued,
+                file_queue_error_handler: fileQueueError,
+                file_dialog_complete_handler: fileDialogComplete,
+                upload_progress_handler: uploadProgress,
+                upload_error_handler: uploadError,
+                upload_success_handler: uploadSuccess,
+                upload_complete_handler: uploadComplete,
+                file_dialog_start_handler: fileDialogStart,
+                upload_start_handler: uploadStart,
+
+
+                button_image_url: "images/SwfButtonNoText_40x22.png",
+                button_placeholder_id: "spanButtonPlaceholderrar",
+                button_width: 40,
+                button_height: 22,
+                button_text: '<span class="button">浏览</span></span>',
+                button_text_style: '.button { font-family: Helvetica, Arial, sans-serif; font-size: 14pt; } .buttonSmall { font-size: 10pt; }',
+                button_text_top_padding: 1,
+                button_text_left_padding: 5,
+
+
+                flash_url: "SwfUpload/swfupload.swf",
+                flash9_url: "SwfUpload/swfupload_FP9.swf",
+
+                custom_settings: {
+                    upload_target: "divFileProgressContainer"
+                },
+
+
+                debug: false
+            });
+
+
+        }
+
+        SetUp();
+        SetRepeaterListStyle();
+
+        function request(paras) {
+            var url = location.href;
+            var paraString = url.substring(url.indexOf("?") + 1, url.length).split("&");
+            var paraObj = {}
+            for (i = 0; j = paraString[i]; i++) {
+                paraObj[j.substring(0, j.indexOf("=")).toLowerCase()] = j.substring(j.indexOf("=") + 1, j.length);
+            }
+            var returnValue = paraObj[paras.toLowerCase()];
+            if (typeof (returnValue) == "undefined") {
+                return "";
+            } else {
+                return returnValue;
+            }
+        }
+
+        function up1() {
+            document.getElementById("shangchuanBtn2").style.display = "none";
+            document.getElementById("shangchuanBtn1").style.display = "";
+            document.getElementById("LinkButton2").style.display = "none";
+            document.getElementById("TextBox1").value = "";
+            document.getElementById("TextBox5").value = "";
+            document.getElementById("TextBox6").value = "";
+            document.getElementById("txtFileName").value = "";
+        }
+
+        function up2() {
+            document.getElementById("shangchuanBtn1").style.display = "none";
+            document.getElementById("shangchuanBtn2").style.display = "";
+            document.getElementById("LinkButton2").style.display = "none";
+            document.getElementById("txtRarName").value = "";
+        }
+        function up3() {
+            document.getElementById("shangchuanBtn1").style.display = "none";
+            document.getElementById("shangchuanBtn2").style.display = "none";
+            document.getElementById("LinkButton2").style.display = "";
+            document.getElementById("TextBox2").value = "";
+            document.getElementById("TextBox3").value = "";
+            document.getElementById("TextBox4").value = "";
+            document.getElementById("tbUnit").value = "";
+        }
+
+        function upfiles(file_id) {
+            var pm = document.getElementById("TextBox1").value;
+            var jj = "";
+            var zz = document.getElementById("TextBox5").value;
+            var dw = document.getElementById("TextBox6").value;
+            var fl = "";
+            var fd = document.getElementById("ddlFolderlist").value;
+
+
+            //swfu.setPostParams( {"ASPSESSID" : "gojaxz45fco34g3kknhmlv45","PAPERTITLE": bt,"AUTHORNAME": zz});
+            swfu.setPostParams({ "ASPSESSID": "gojaxz45fco34g3kknhmlv45", "PM": pm, "JJ": jj, "ZZ": zz, "DW": dw, "FL": fl, "FD": fd });
+
+            var fileid = document.getElementById("file_id").value;
+            if (fileid != "") {
+                swfu.startUpload(fileid);
+                document.getElementById("divFileProgressContainer").style.display = "";
+            }
+            else {
+                alert("请选择上传文件！");
+            }
+
+        }
+
+        function uprar(file_id) {
+            var fd = document.getElementById("ddlFolderlist").value;
+
+
+            swfurar.setPostParams({ "ASPSESSID": "gojaxz45fco34g3kknhmlv45", "PM": "", "JJ": "", "ZZ": "", "DW": "", "FL": "", "FD": fd });
+            var fileid = document.getElementById("file_id").value;
+            if (fileid != "") {
+                swfurar.startUpload(fileid);
+                document.getElementById("divFileProgressContainer").style.display = "";
+            }
+            else {
+                alert("请选择上传文件！");
+            }
+
+        }
+
+        function Check_meu() {
+            var str = document.getElementById("TextBox4").value;
+            var str1 = document.getElementById("TextBox2").value;
+
+            //var checkuname=/^[^*.&\/:?|]+$/;
+            var txt = new RegExp("[\\*,\\&,\\\\,\\/,\\?,\\|,\\:,\\<,\\>,\"]");
+            if (str1 == "") {
+                alert("篇名不能为空");
+                return false;
+            }
+            else if (txt.test(str1)) {
+                alert("篇名不能包含特殊字符");
+                return false;
+            }
+            else if (str == "") {
+                alert("待检测正文不能为空");
+                return false;
+            }
+            else {
+                CloseCKWX1();
+                showCKWX4();
+                //                document.getElementById('Search__Waiting').style.visibility = 'visible';
+                //                mask.style.visibility = 'visible';
+                return true;
+            }
+        }
+    </script>
+
+    
+
+<script type="text/javascript">
+//<![CDATA[
+clearAllMarks(this.form);nodeclick();WebForm_AutoFocus('ImageButton5');Sys.Application.initialize();
+Sys.Application.add_init(function() {
+    $create(Sys.UI._UpdateProgress, {"associatedUpdatePanelId":null,"displayAfter":50,"dynamicLayout":true}, null, null, $get("UpdateProgress1"));
+});
+//]]>
+</script>
+</form>
+</body>
+</html>

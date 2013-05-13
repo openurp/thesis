@@ -1,0 +1,15 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.openurp.thesis</groupId>
+  <artifactId>openurp-thesis-parent</artifactId>
+  <packaging>pom</packaging>
+  <name>OpenUrp Thesis Parent</name>
+  <version>0.0.1</version>
+  <properties>
+    <bundle.symbolicName>org.openurp.thesis</bundle.symbolicName>
+    <bundle.namespace>org.openurp.thesis</bundle.namespace>
+  </properties>
+  <modules>
+    <module>org.openurp.thesis.check</module>
+  </modules>
+</project>
