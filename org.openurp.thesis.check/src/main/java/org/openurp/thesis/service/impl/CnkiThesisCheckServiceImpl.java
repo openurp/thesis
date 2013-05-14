@@ -34,6 +34,8 @@ import org.beangle.commons.comparators.PropertyComparator;
 import org.openurp.thesis.service.CheckResult;
 import org.openurp.thesis.service.ReportStyle;
 import org.openurp.thesis.service.ThesisCheckService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -45,6 +47,9 @@ import org.openurp.thesis.service.ThesisCheckService;
  */
 public class CnkiThesisCheckServiceImpl implements ThesisCheckService {
 	DefaultHttpClient httpclient = new DefaultHttpClient();
+
+	private static Logger logger = LoggerFactory
+			.getLogger(CnkiThesisCheckServiceImpl.class);
 
 	String context = "http://pmlc.cnki.net/school";
 	/** 登陆地址 */
@@ -103,9 +108,8 @@ public class CnkiThesisCheckServiceImpl implements ThesisCheckService {
 					convertToValuePairs(params), "UTF-8"));
 			HttpResponse response = httpclient.execute(httpost);
 			HttpEntity entity = response.getEntity();
-			// FIXME debug
-			// System.out.println(httpost.getRequestLine() + " "
-			// + response.getStatusLine().getStatusCode());
+			logger.debug(httpost.getRequestLine() + " "
+					+ response.getStatusLine().getStatusCode());
 			EntityUtils.consume(entity);
 
 			success = (302 == response.getStatusLine().getStatusCode());
@@ -175,7 +179,8 @@ public class CnkiThesisCheckServiceImpl implements ThesisCheckService {
 		content = content.replaceAll("<input([\\s\\S]*?)>", "");
 		content = content.replaceAll("href=\"(.*?).css", "href=\"" + context
 				+ "/$1.css");
-		content = content.replaceAll("images(.*?)gif", context + "/images$1gif");
+		content = content
+				.replaceAll("images(.*?)gif", context + "/images$1gif");
 		return content;
 	}
 
@@ -271,8 +276,7 @@ public class CnkiThesisCheckServiceImpl implements ThesisCheckService {
 		} catch (Exception e) {
 			throw new UnhandledException(e);
 		}
-		System.out.println("upload " + file.getName() + " response is "
-				+ content);
+		logger.debug("upload " + file.getName() + " response is " + content);
 		/* 只有200是成功的，其他错误码，在handlers.js中的uploadSuccess删除中 */
 		return StringUtils.trim(content).equals("200");
 	}
@@ -388,7 +392,6 @@ public class CnkiThesisCheckServiceImpl implements ThesisCheckService {
 		try {
 			HttpResponse response = httpclient.execute(innerget);
 			HttpEntity entity = response.getEntity();
-			System.out.println(EntityUtils.toString(entity));
 			EntityUtils.consume(entity);
 			return response;
 		} catch (Exception e) {
