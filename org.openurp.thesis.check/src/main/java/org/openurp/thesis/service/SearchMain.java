@@ -59,7 +59,7 @@ public class SearchMain {
 					Long id = Long.valueOf(input);
 					String content = check.report(id, ReportStyle.Simple);
 					File tmp = File.createTempFile("report", ".html");
-					FileUtils.writeStringToFile(tmp, content);
+					FileUtils.writeStringToFile(tmp, content,"UTF-8");
 					System.out.println("save report in "
 							+ tmp.getAbsolutePath());
 				}

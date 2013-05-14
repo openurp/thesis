@@ -198,7 +198,7 @@ public class CnkiThesisCheckServiceImpl implements ThesisCheckService {
 		}
 		text = StringUtils.substringBetween(text, "GridView2", "</table>");
 		if (StringUtils.isEmpty(text))
-			Collections.emptyList();
+			return Collections.emptyList();
 		List<CheckResult> results = extract(text);
 		if (null == article)
 			return results;
