@@ -147,7 +147,7 @@ public class CnkiThesisCheckServiceImpl implements ThesisCheckService {
 
 	public File getCaptcha() {
 		try {
-			return download(loginCaptchaUrl);
+			return download(loginCaptchaUrl, "captcha", ".jpg");
 		} catch (Exception e) {
 			return null;
 		}
@@ -286,11 +286,12 @@ public class CnkiThesisCheckServiceImpl implements ThesisCheckService {
 		}
 	}
 
-	protected File download(String url) throws Exception {
+	protected File download(String url, String prefix, String suffix)
+			throws Exception {
 		HttpGet innerget = new HttpGet(url);
 		HttpResponse response = httpclient.execute(innerget);
 		if (HttpStatus.SC_OK == response.getStatusLine().getStatusCode()) {
-			File tmp = File.createTempFile("download", "tmp");
+			File tmp = File.createTempFile(prefix, suffix);
 			FileOutputStream output = new FileOutputStream(tmp);
 			IOUtils.copy(response.getEntity().getContent(), output);
 			output.flush();
