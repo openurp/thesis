@@ -13,6 +13,7 @@ public class CheckResult {
 	final float ratio;
 	final int count;
 
+
 	public CheckResult(long id, String article, String author, String checksum,
 			Date checkAt, float ratio, int count) {
 		super();
@@ -73,5 +74,4 @@ public class CheckResult {
 	public int getCount() {
 		return count;
 	}
-
 }

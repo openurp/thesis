@@ -14,6 +14,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.UnhandledException;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -31,6 +32,7 @@ import org.apache.http.util.EntityUtils;
 import org.beangle.commons.collection.CollectUtils;
 import org.beangle.commons.comparators.PropertyComparator;
 import org.openurp.thesis.service.CheckResult;
+import org.openurp.thesis.service.ReportStyle;
 import org.openurp.thesis.service.ThesisCheckService;
 
 /**
@@ -42,18 +44,24 @@ import org.openurp.thesis.service.ThesisCheckService;
  * 
  */
 public class CnkiThesisCheckServiceImpl implements ThesisCheckService {
-
 	DefaultHttpClient httpclient = new DefaultHttpClient();
 
+	String context = "http://pmlc.cnki.net/school";
 	/** 登陆地址 */
-	String loginUrl = "http://pmlc.cnki.net/school/Login.aspx";
+	String loginUrl = context + "/Login.aspx";
+
 	/** 登陆验证码地址 */
-	String loginCaptchaUrl = "http://pmlc.cnki.net/school/Users/LoginCheckCode.aspx";
-	String logoutUrl;
+	String loginCaptchaUrl = context + "/Users/LoginCheckCode.aspx";
+
 	/** 上传论文地址 */
-	String uploadUrl = "http://pmlc.cnki.net/school/upload/receivefiles.aspx";
+	String uploadUrl = context + "/upload/receivefiles.aspx";
 	/** 查询信息地址 */
-	String infoUrl = "http://pmlc.cnki.net/school/SimResult.aspx";
+	String searchUrl = context + "/SimResult.aspx";
+
+	/** 报表地址 */
+	String reportUrl = context + "/Report.aspx";
+
+	String logoutUrl;
 
 	/** 针对查询结果匹配的正则表达式 */
 	Pattern checkPattern = Pattern
@@ -70,58 +78,60 @@ public class CnkiThesisCheckServiceImpl implements ThesisCheckService {
 	/**
 	 * 登陆方法，登陆成功后会获取foldId和sessionId
 	 */
-	@Override
-	public boolean login(String username, String password, String captcha,
-			Map<String, String> params) throws Exception {
+	public boolean login(String username, String password, String captcha) {
 		foldId = null;
 		sessionId = null;
-		Map<String, String> merged = new HashMap<String, String>();
-		if (null != params)
-			merged.putAll(params);
+		Map<String, String> params = new HashMap<String, String>();
 
-		merged.put("UserName", username);
-		merged.put("UserPwd", password);
+		params.put("UserName", username);
+		params.put("UserPwd", password);
 		if (null != captcha)
-			merged.put("TextBox_Check", captcha);
+			params.put("TextBox_Check", captcha);
 
-		merged.put("__EVENTVALIDATION",
+		params.put("__EVENTVALIDATION",
 				"/wEWBQKf9pzyCQKvruq2CAKEzp2FBwKf06GLAQLSwpnTCOrkpBeWGp1IoUnLJnsl8k/Cet1H");
-		merged.put(
+		params.put(
 				"__VIEWSTATE",
 				"/wEPDwUKLTY1NDc5ODY2NWQYAQUeX19Db250cm9sc1JlcXVpcmVQb3N0QmFja0tleV9fFgEFDEltYWdlQnV0dG9uMbIaUF+dr62e/YiWT95H6zzf5pIB");
-		merged.put("ImageButton1.x", "0");
-		merged.put("ImageButton1.y", "0");
+		params.put("ImageButton1.x", "0");
+		params.put("ImageButton1.y", "0");
 
 		HttpPost httpost = new HttpPost(loginUrl);
-		httpost.setEntity(new UrlEncodedFormEntity(convertToValuePairs(merged),
-				"UTF-8"));
-		HttpResponse response = httpclient.execute(httpost);
-		HttpEntity entity = response.getEntity();
-		// FIXME debug
-		// System.out.println(httpost.getRequestLine() + " "
-		// + response.getStatusLine().getStatusCode());
-		EntityUtils.consume(entity);
+		boolean success = false;
+		try {
+			httpost.setEntity(new UrlEncodedFormEntity(
+					convertToValuePairs(params), "UTF-8"));
+			HttpResponse response = httpclient.execute(httpost);
+			HttpEntity entity = response.getEntity();
+			// FIXME debug
+			// System.out.println(httpost.getRequestLine() + " "
+			// + response.getStatusLine().getStatusCode());
+			EntityUtils.consume(entity);
 
-		boolean success = (302 == response.getStatusLine().getStatusCode());
-		if (success) {
-			for (Cookie ck : httpclient.getCookieStore().getCookies()) {
-				if (ck.getName().equals("ASP.NET_SessionId")) {
-					sessionId = ck.getValue();
-					break;
+			success = (302 == response.getStatusLine().getStatusCode());
+			if (success) {
+				for (Cookie ck : httpclient.getCookieStore().getCookies()) {
+					if (ck.getName().equals("ASP.NET_SessionId")) {
+						sessionId = ck.getValue();
+						break;
+					}
 				}
+				response = httpclient.execute(new HttpGet(searchUrl));
+				if (HttpStatus.SC_OK == response.getStatusLine()
+						.getStatusCode()) {
+					buildInfoParams(EntityUtils.toString(response.getEntity()));
+				} else if (HttpStatus.SC_MOVED_TEMPORARILY == response
+						.getStatusLine().getStatusCode()) {
+					String location = response.getFirstHeader("Location")
+							.getValue();
+					buildInfoParams(access(location));
+				}
+				EntityUtils.consume(response.getEntity());
+				success = (StringUtils.isNotEmpty(foldId) && StringUtils
+						.isNotEmpty(sessionId));
 			}
-			response = httpclient.execute(new HttpGet(infoUrl));
-			if (HttpStatus.SC_OK == response.getStatusLine().getStatusCode()) {
-				buildInfoParams(EntityUtils.toString(response.getEntity()));
-			} else if (HttpStatus.SC_MOVED_TEMPORARILY == response
-					.getStatusLine().getStatusCode()) {
-				String location = response.getFirstHeader("Location")
-						.getValue();
-				buildInfoParams(access(location));
-			}
-			EntityUtils.consume(response.getEntity());
-			success = (StringUtils.isNotEmpty(foldId) && StringUtils
-					.isNotEmpty(sessionId));
+		} catch (Exception e) {
+			throw new UnhandledException(e);
 		}
 		return success;
 	}
@@ -135,21 +145,6 @@ public class CnkiThesisCheckServiceImpl implements ThesisCheckService {
 		httpclient.getConnectionManager().shutdown();
 	}
 
-	@Override
-	public File download(String url) throws Exception {
-		HttpGet innerget = new HttpGet(url);
-		HttpResponse response = httpclient.execute(innerget);
-		if (HttpStatus.SC_OK == response.getStatusLine().getStatusCode()) {
-			File tmp = File.createTempFile("download", "tmp");
-			FileOutputStream output = new FileOutputStream(tmp);
-			IOUtils.copy(response.getEntity().getContent(), output);
-			output.flush();
-			IOUtils.closeQuietly(output);
-			return tmp;
-		} else
-			return null;
-	}
-
 	public File getCaptcha() {
 		try {
 			return download(loginCaptchaUrl);
@@ -160,17 +155,26 @@ public class CnkiThesisCheckServiceImpl implements ThesisCheckService {
 
 	public CheckResult check(String author, String article, File file)
 			throws Exception {
-		CheckResult result = searchFirst(author, article);
+		CheckResult result = get(author, article);
 		if (null != result)
 			return result;
+		if (null == file)
+			return null;
 		upload(author, article, file);
 		Thread.sleep(1000);
-		return searchFirst(author, article);
+		return get(author, article);
 	}
 
-	@Override
-	public List<CheckResult> search(String author, String article)
-			throws Exception {
+	public String report(long id, ReportStyle style) {
+		String param = "p";
+		if (style.equals(ReportStyle.Detail))
+			param = "a";
+		String content = access(this.reportUrl + "?LeftFile=" + id + "&t="
+				+ param);
+		return content;
+	}
+
+	public List<CheckResult> search(String author, String article) {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("DDL1", "作者");
 		params.put("TB1", author);
@@ -178,15 +182,20 @@ public class CnkiThesisCheckServiceImpl implements ThesisCheckService {
 		params.put("ImageButton5.x", "-762");
 		params.put("ImageButton5.y", "-178");
 		params.putAll(infoParams);
-		HttpPost httpost = new HttpPost(infoUrl);
+		HttpPost httpost = new HttpPost(searchUrl);
 		// params.put("__ASYNCPOST","true");
 		// httpost.addHeader("X-MicrosoftAjax", "Delta=true");
-		httpost.setEntity(new UrlEncodedFormEntity(convertToValuePairs(params),
-				"UTF-8"));
-		HttpResponse response = httpclient.execute(httpost);
-		HttpEntity entity = response.getEntity();
-		String text = EntityUtils.toString(entity);
-		EntityUtils.consume(entity);
+		String text = null;
+		try {
+			httpost.setEntity(new UrlEncodedFormEntity(
+					convertToValuePairs(params), "UTF-8"));
+			HttpResponse response = httpclient.execute(httpost);
+			HttpEntity entity = response.getEntity();
+			text = EntityUtils.toString(entity);
+			EntityUtils.consume(entity);
+		} catch (Exception e) {
+			return Collections.emptyList();
+		}
 		text = StringUtils.substringBetween(text, "GridView2", "</table>");
 		if (StringUtils.isEmpty(text))
 			Collections.emptyList();
@@ -202,31 +211,18 @@ public class CnkiThesisCheckServiceImpl implements ThesisCheckService {
 		return rs;
 	}
 
-	protected String access(String url) {
-		HttpGet innerget = new HttpGet(url);
-		try {
-			HttpResponse response = httpclient.execute(innerget);
-			HttpEntity entity = response.getEntity();
-			String content = EntityUtils.toString(entity);
-			EntityUtils.consume(entity);
-			return content;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-
 	/**
 	 * 查找符合条件的第一个
 	 * 
 	 * @param author
+	 *            notnull
 	 * @param article
+	 *            notnull
 	 * @return
 	 * @throws Exception
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	protected CheckResult searchFirst(String author, String article)
-			throws Exception {
+	public CheckResult get(String author, String article) {
 		List<CheckResult> results = search(author, article);
 		if (!results.isEmpty()) {
 			if (results.size() > 1)
@@ -247,30 +243,61 @@ public class CnkiThesisCheckServiceImpl implements ThesisCheckService {
 	 * @throws Exception
 	 * @see http://pmlc.cnki.net/school/SwfUpload/handlers.js#uploadSuccess
 	 */
-	protected boolean upload(String author, String article, File file)
-			throws Exception {
+	public boolean upload(String author, String article, File file) {
 		Charset utf8 = Charset.forName("UTF-8");
 		MultipartEntity reqEntity = new MultipartEntity();
-		reqEntity.addPart("JJ", new StringBody("", utf8));
-		reqEntity.addPart("DW", new StringBody("", utf8));
-		reqEntity.addPart("FL", new StringBody("", utf8));
-		reqEntity.addPart("PM", new StringBody(article, utf8));
-		reqEntity.addPart("ZZ", new StringBody(author, utf8));
-		reqEntity.addPart("FD", new StringBody(foldId, utf8));
-		reqEntity.addPart("ASPSESSID", new StringBody(sessionId, utf8));
-		reqEntity.addPart("Filedata", new FileBody(file));
-		HttpPost httpost = new HttpPost(uploadUrl);
-		httpost.setEntity(reqEntity);
+		String content = null;
+		try {
+			reqEntity.addPart("JJ", new StringBody("", utf8));
+			reqEntity.addPart("DW", new StringBody("", utf8));
+			reqEntity.addPart("FL", new StringBody("", utf8));
+			reqEntity.addPart("PM", new StringBody(article, utf8));
+			reqEntity.addPart("ZZ", new StringBody(author, utf8));
+			reqEntity.addPart("FD", new StringBody(foldId, utf8));
+			reqEntity.addPart("ASPSESSID", new StringBody(sessionId, utf8));
+			reqEntity.addPart("Filedata", new FileBody(file));
+			HttpPost httpost = new HttpPost(uploadUrl);
+			httpost.setEntity(reqEntity);
 
-		HttpResponse response = httpclient.execute(httpost);
-		HttpEntity entity = response.getEntity();
-		String content = EntityUtils.toString(entity);
-		EntityUtils.consume(entity);
-
+			HttpResponse response = httpclient.execute(httpost);
+			HttpEntity entity = response.getEntity();
+			content = EntityUtils.toString(entity);
+			EntityUtils.consume(entity);
+		} catch (Exception e) {
+			throw new UnhandledException(e);
+		}
 		System.out.println("upload " + file.getName() + " response is "
 				+ content);
 		/* 只有200是成功的，其他错误码，在handlers.js中的uploadSuccess删除中 */
 		return StringUtils.trim(content).equals("200");
+	}
+
+	protected String access(String url) {
+		HttpGet innerget = new HttpGet(url);
+		try {
+			HttpResponse response = httpclient.execute(innerget);
+			HttpEntity entity = response.getEntity();
+			String content = EntityUtils.toString(entity);
+			EntityUtils.consume(entity);
+			return content;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	protected File download(String url) throws Exception {
+		HttpGet innerget = new HttpGet(url);
+		HttpResponse response = httpclient.execute(innerget);
+		if (HttpStatus.SC_OK == response.getStatusLine().getStatusCode()) {
+			File tmp = File.createTempFile("download", "tmp");
+			FileOutputStream output = new FileOutputStream(tmp);
+			IOUtils.copy(response.getEntity().getContent(), output);
+			output.flush();
+			IOUtils.closeQuietly(output);
+			return tmp;
+		} else
+			return null;
 	}
 
 	/**
@@ -399,12 +426,12 @@ public class CnkiThesisCheckServiceImpl implements ThesisCheckService {
 		this.uploadUrl = uploadUrl;
 	}
 
-	public String getInfoUrl() {
-		return infoUrl;
+	public String getSearchUrl() {
+		return searchUrl;
 	}
 
-	public void setInfoUrl(String infoUrl) {
-		this.infoUrl = infoUrl;
+	public void setSearchUrl(String searchUrl) {
+		this.searchUrl = searchUrl;
 	}
 
 	public String getLoginCaptchaUrl() {
