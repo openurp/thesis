@@ -25,6 +25,7 @@ public class SearchMain {
 		String captcha = stdin.readLine();
 
 		if (check.login(username, password, captcha)) {
+			captchaFile.delete();
 			System.out
 					.println("login success,and start query.\nPlease enter query/report/exist(or exit).");
 			String mode = "query";
@@ -57,7 +58,7 @@ public class SearchMain {
 						continue;
 					}
 					Long id = Long.valueOf(input);
-					String content = check.report(id, ReportStyle.Simple);
+					String content = check.report(id, ReportStyle.Detail);
 					File tmp = File.createTempFile("report", ".html");
 					FileUtils.writeStringToFile(tmp, content,"UTF-8");
 					System.out.println("save report in "

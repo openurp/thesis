@@ -147,7 +147,7 @@ public class CnkiThesisCheckServiceImpl implements ThesisCheckService {
 
 	public File getCaptcha() {
 		try {
-			return download(loginCaptchaUrl, "captcha", ".jpg");
+			return download(loginCaptchaUrl, "captcha", ".gif");
 		} catch (Exception e) {
 			return null;
 		}
@@ -171,6 +171,11 @@ public class CnkiThesisCheckServiceImpl implements ThesisCheckService {
 			param = "a";
 		String content = access(this.reportUrl + "?LeftFile=" + id + "&t="
 				+ param);
+		content = content.replaceAll("<script([\\s\\S]*?)</script>", "");
+		content = content.replaceAll("<input([\\s\\S]*?)>", "");
+		content = content.replaceAll("href=\"(.*?).css", "href=\"" + context
+				+ "/$1.css");
+		content = content.replaceAll("images(.*?)gif", context + "/images$1gif");
 		return content;
 	}
 
